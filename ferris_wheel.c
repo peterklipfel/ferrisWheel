@@ -168,6 +168,47 @@ static void beam(double x,double y,double z,
    glPopMatrix();
 }
 
+static void Vertex(double th,double ph)
+{
+   // glVertex3d(Sin(th)*Cos(ph) , Sin(ph) , Cos(th)*Cos(ph));
+   double x = Sin(th)*Cos(ph);
+   double y = Cos(th)*Cos(ph);
+   double z =         Sin(ph);
+   //  For a sphere at the origin, the position
+   //  and normal vectors are the same
+   glNormal3d(x,y,z);
+   glVertex3d(x,y,z);
+}
+
+static void ball(double x,double y,double z,double r)
+{
+   int th,ph;
+   float yellow[] = {1.0,1.0,0.0,1.0};
+   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+   //  Save transformation
+   glPushMatrix();
+   //  Offset, scale and rotate
+   glTranslated(x,y,z);
+   glScaled(r,r,r);
+   //  White ball
+   glMaterialfv(GL_FRONT,GL_SHININESS,shinyvec);
+   glMaterialfv(GL_FRONT,GL_SPECULAR,yellow);
+   glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
+   //  Bands of latitude
+   for (ph=-90;ph<90;ph+=inc)
+   {
+      glBegin(GL_QUAD_STRIP);
+      for (th=0;th<=360;th+=2*inc)
+      {
+         Vertex(th,ph);
+         Vertex(th,ph+inc);
+      }
+      glEnd();
+   }
+   //  Undo transofrmations
+   glPopMatrix();
+}
+
 static void passenger_box(double x,double y,double z,
                  double dx,double dy,double dz,
                  double th)
@@ -179,6 +220,8 @@ static void passenger_box(double x,double y,double z,
    glRotated(th,0,1,0);
    glScaled(dx,dy,dz);
    //  passenger_box
+   glColor3f(0.8,0.4,0.3);
+   ball(0, +1.5, 0, 0.5);
    glBegin(GL_QUADS);
    //  Front
    glColor3f(0.6,0.3,0.3);
@@ -221,47 +264,6 @@ static void passenger_box(double x,double y,double z,
    glPopMatrix();
 }
 
-static void Vertex(double th,double ph)
-{
-   // glVertex3d(Sin(th)*Cos(ph) , Sin(ph) , Cos(th)*Cos(ph));
-   double x = Sin(th)*Cos(ph);
-   double y = Cos(th)*Cos(ph);
-   double z =         Sin(ph);
-   //  For a sphere at the origin, the position
-   //  and normal vectors are the same
-   glNormal3d(x,y,z);
-   glVertex3d(x,y,z);
-}
-
-static void ball(double x,double y,double z,double r)
-{
-   int th,ph;
-   float yellow[] = {1.0,1.0,0.0,1.0};
-   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
-   //  Save transformation
-   glPushMatrix();
-   //  Offset, scale and rotate
-   glTranslated(x,y,z);
-   glScaled(r,r,r);
-   //  White ball
-   glColor3f(1,1,1);
-   glMaterialfv(GL_FRONT,GL_SHININESS,shinyvec);
-   glMaterialfv(GL_FRONT,GL_SPECULAR,yellow);
-   glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
-   //  Bands of latitude
-   for (ph=-90;ph<90;ph+=inc)
-   {
-      glBegin(GL_QUAD_STRIP);
-      for (th=0;th<=360;th+=2*inc)
-      {
-         Vertex(th,ph);
-         Vertex(th,ph+inc);
-      }
-      glEnd();
-   }
-   //  Undo transofrmations
-   glPopMatrix();
-}
 
 
 static void light(double x,double y,double z,double r, double start_angle, double end_angle)
@@ -286,31 +288,6 @@ static void light(double x,double y,double z,double r, double start_angle, doubl
       }
       glEnd();
    }
-   //  //  Translate intensity to color vectors
-   // float Ambient[]   = {0.01*ambient ,0.01*ambient ,0.01*ambient ,1.0};
-   // float Diffuse[]   = {0.01*diffuse ,0.01*diffuse ,0.01*diffuse ,1.0};
-   // float Specular[]  = {0.01*specular,0.01*specular,0.01*specular,1.0};
-   // //  Light position
-   // float Position[]  = {x,y, z, 1.0};
-   // //  Draw light position as ball (still no lighting here)
-   // glColor3f(1,1,1);
-   // ball(Position[0],Position[1],Position[2] , 0.1);
-   // //  OpenGL should normalize normal vectors
-   // glEnable(GL_NORMALIZE);
-   // //  Enable lighting
-   // glEnable(GL_LIGHTING);
-   // //  Location of viewer for specular calculations
-   // glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,local);
-   // //  glColor sets ambient and diffuse color materials
-   // glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE);
-   // glEnable(GL_COLOR_MATERIAL);
-   // //  Enable light 0
-   // glEnable(GL_LIGHT0);
-   // //  Set ambient, diffuse, specular components and position of light 0
-   // glLightfv(GL_LIGHT0,GL_AMBIENT ,Ambient);
-   // glLightfv(GL_LIGHT0,GL_DIFFUSE ,Diffuse);
-   // glLightfv(GL_LIGHT0,GL_SPECULAR,Specular);
-   // glLightfv(GL_LIGHT0,GL_POSITION,Position);
    //  Undo transformations
    glPopMatrix();
 }
@@ -418,7 +395,7 @@ void display()
    //  Flat or smooth shading
    glShadeModel(smooth ? GL_SMOOTH : GL_FLAT);
 
-   //  Light switch
+   // Light switch
    if (lamp)
    {
       //  Translate intensity to color vectors
