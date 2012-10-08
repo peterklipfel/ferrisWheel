@@ -21,12 +21,27 @@ int ph=0;         //  Elevation of view angle
 int fov=55;       //  Field of view (for perspective)
 int num_lights=1;
 int spokes = 6;
-int mode=0;       //  Depth mode
+int mode=1;       //  Depth mode
 double asp=1;     //  Aspect ratio
 double dim=7.0;   //  Size of world
 double rotation = 0;
 double vel_division = 900000.0;
 int earthquake = 0;
+//Lighting
+int lamp      =   1;
+int one       =   1;  // Unit value
+int distance  =   5;  // Light distance
+int inc       =  10;  // Ball increment
+int smooth    =   1;  // Smooth/Flat shading
+int local     =   0;  // Local Viewer Model
+int emission  =   0;  // Emission intensity (%)
+int ambient   =  30;  // Ambient intensity (%)
+int diffuse   = 100;  // Diffuse intensity (%)
+int specular  =   0;  // Specular intensity (%)
+int shininess =   0;  // Shininess (power of two)
+float shinyvec[1];    // Shininess (value)
+int zh        =  90;  // Light azimuth
+float ylight  =   0;  // Elevation of light
 
 
 //  Macro for sin & cos in degrees
@@ -99,7 +114,6 @@ static void outer_frame(double center_x, double center_y,
    glEnd(); 
 }
 
-
 static void beam(double x,double y,double z,
                  double dx,double dy,double dz,
                  double th1, double th2, double ph)
@@ -113,31 +127,37 @@ static void beam(double x,double y,double z,
    //  passenger_box
    glBegin(GL_QUADS);
    //  Front
+   glNormal3f( 0, 0, 1);
    glVertex3f(-1,-1, 1);
    glVertex3f(+1,-1, 1);
    glVertex3f(+1,+1, 1);
    glVertex3f(-1,+1, 1);
    //  Back
+   glNormal3f( 0, 0,-1);
    glVertex3f(+1,-1,-1);
    glVertex3f(-1,-1,-1);
    glVertex3f(-1,+1,-1);
    glVertex3f(+1,+1,-1);
    //  Right
+   glNormal3f(+1, 0, 0);
    glVertex3f(+1,-1,+1);
    glVertex3f(+1,-1,-1);
    glVertex3f(+1,+1,-1);
    glVertex3f(+1,+1,+1);
    //  Left
+   glNormal3f(-1, 0, 0);
    glVertex3f(-1,-1,-1);
    glVertex3f(-1,-1,+1);
    glVertex3f(-1,+1,+1);
    glVertex3f(-1,+1,-1);
    //  Top
+   glNormal3f( 0,+1, 0);
    glVertex3f(-1,+1,+1);
    glVertex3f(+1,+1,+1);
    glVertex3f(+1,+1,-1);
    glVertex3f(-1,+1,-1);
    //  Bottom
+   glNormal3f( 0,-one, 0);
    glVertex3f(-1,-1,-1);
    glVertex3f(+1,-1,-1);
    glVertex3f(+1,-1,+1);
@@ -162,30 +182,35 @@ static void passenger_box(double x,double y,double z,
    glBegin(GL_QUADS);
    //  Front
    glColor3f(0.6,0.3,0.3);
+   glNormal3f( 0, 0, 1);
    glVertex3f(-1,-1, 1);
    glVertex3f(+1,-1, 1);
    glVertex3f(+1,+1, 1);
    glVertex3f(-1,+1, 1);
    //  Back
    glColor3f(0.6,0.3,0.3);
+   glNormal3f( 0, 0,-1);
    glVertex3f(+1,-1,-1);
    glVertex3f(-1,-1,-1);
    glVertex3f(-1,+1,-1);
    glVertex3f(+1,+1,-1);
    //  Right
    glColor3f(0.6,0.3,0.3);
+   glNormal3f(+1, 0, 0);
    glVertex3f(+1,-1,+1);
    glVertex3f(+1,-1,-1);
    glVertex3f(+1,+1,-1);
    glVertex3f(+1,+1,+1);
    //  Left
    glColor3f(0.6,0.3,0.3);
+   glNormal3f(-1, 0, 0);
    glVertex3f(-1,-1,-1);
    glVertex3f(-1,-1,+1);
    glVertex3f(-1,+1,+1);
    glVertex3f(-1,+1,-1);
    //  Bottom
    glColor3f(1,1,1);
+   glNormal3f( 0,-one, 0);
    glVertex3f(-1,-1,-1);
    glVertex3f(+1,-1,-1);
    glVertex3f(+1,-1,+1);
@@ -198,8 +223,46 @@ static void passenger_box(double x,double y,double z,
 
 static void Vertex(double th,double ph)
 {
-   glVertex3d(Sin(th)*Cos(ph) , Sin(ph) , Cos(th)*Cos(ph));
+   // glVertex3d(Sin(th)*Cos(ph) , Sin(ph) , Cos(th)*Cos(ph));
+   double x = Sin(th)*Cos(ph);
+   double y = Cos(th)*Cos(ph);
+   double z =         Sin(ph);
+   //  For a sphere at the origin, the position
+   //  and normal vectors are the same
+   glNormal3d(x,y,z);
+   glVertex3d(x,y,z);
 }
+
+static void ball(double x,double y,double z,double r)
+{
+   int th,ph;
+   float yellow[] = {1.0,1.0,0.0,1.0};
+   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+   //  Save transformation
+   glPushMatrix();
+   //  Offset, scale and rotate
+   glTranslated(x,y,z);
+   glScaled(r,r,r);
+   //  White ball
+   glColor3f(1,1,1);
+   glMaterialfv(GL_FRONT,GL_SHININESS,shinyvec);
+   glMaterialfv(GL_FRONT,GL_SPECULAR,yellow);
+   glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
+   //  Bands of latitude
+   for (ph=-90;ph<90;ph+=inc)
+   {
+      glBegin(GL_QUAD_STRIP);
+      for (th=0;th<=360;th+=2*inc)
+      {
+         Vertex(th,ph);
+         Vertex(th,ph+inc);
+      }
+      glEnd();
+   }
+   //  Undo transofrmations
+   glPopMatrix();
+}
+
 
 static void light(double x,double y,double z,double r, double start_angle, double end_angle)
 {
@@ -223,7 +286,31 @@ static void light(double x,double y,double z,double r, double start_angle, doubl
       }
       glEnd();
    }
-
+   //  //  Translate intensity to color vectors
+   // float Ambient[]   = {0.01*ambient ,0.01*ambient ,0.01*ambient ,1.0};
+   // float Diffuse[]   = {0.01*diffuse ,0.01*diffuse ,0.01*diffuse ,1.0};
+   // float Specular[]  = {0.01*specular,0.01*specular,0.01*specular,1.0};
+   // //  Light position
+   // float Position[]  = {x,y, z, 1.0};
+   // //  Draw light position as ball (still no lighting here)
+   // glColor3f(1,1,1);
+   // ball(Position[0],Position[1],Position[2] , 0.1);
+   // //  OpenGL should normalize normal vectors
+   // glEnable(GL_NORMALIZE);
+   // //  Enable lighting
+   // glEnable(GL_LIGHTING);
+   // //  Location of viewer for specular calculations
+   // glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,local);
+   // //  glColor sets ambient and diffuse color materials
+   // glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE);
+   // glEnable(GL_COLOR_MATERIAL);
+   // //  Enable light 0
+   // glEnable(GL_LIGHT0);
+   // //  Set ambient, diffuse, specular components and position of light 0
+   // glLightfv(GL_LIGHT0,GL_AMBIENT ,Ambient);
+   // glLightfv(GL_LIGHT0,GL_DIFFUSE ,Diffuse);
+   // glLightfv(GL_LIGHT0,GL_SPECULAR,Specular);
+   // glLightfv(GL_LIGHT0,GL_POSITION,Position);
    //  Undo transformations
    glPopMatrix();
 }
@@ -292,8 +379,8 @@ static void ferris_wheel(double x, double y , double z, double size)
             x_angle = cos(offset + rotation);
             y_angle = sin(offset + rotation);
 
-            light(radius*x_angle, radius*y_angle, 0.35, 0.1, 90, 270);
-            light(radius*x_angle, radius*y_angle, -0.35, 0.1, -90, 90);
+            light(radius*x_angle, radius*y_angle, 0.35, 0.1, 0, 180);
+            light(radius*x_angle, radius*y_angle, -0.35, 0.1, -180, 0);
          }
       }
    }
@@ -328,15 +415,50 @@ void display()
       glRotatef(th,0,1,0);
    }
 
-   double ferris1x = 0;
+   //  Flat or smooth shading
+   glShadeModel(smooth ? GL_SMOOTH : GL_FLAT);
+
+   //  Light switch
+   if (lamp)
+   {
+      //  Translate intensity to color vectors
+      float Ambient[]   = {0.01*ambient ,0.01*ambient ,0.01*ambient ,1.0};
+      float Diffuse[]   = {0.01*diffuse ,0.01*diffuse ,0.01*diffuse ,1.0};
+      float Specular[]  = {0.01*specular,0.01*specular,0.01*specular,1.0};
+      //  Light position
+      float Position[]  = {distance*Cos(zh),ylight,distance*Sin(zh),1.0};
+      //  Draw light position as ball (still no lighting here)
+      glColor3f(1,1,1);
+      ball(Position[0],Position[1],Position[2] , 0.1);
+      //  OpenGL should normalize normal vectors
+      glEnable(GL_NORMALIZE);
+      //  Enable lighting
+      glEnable(GL_LIGHTING);
+      //  Location of viewer for specular calculations
+      glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER,local);
+      //  glColor sets ambient and diffuse color materials
+      glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE);
+      glEnable(GL_COLOR_MATERIAL);
+      //  Enable light 0
+      glEnable(GL_LIGHT0);
+      //  Set ambient, diffuse, specular components and position of light 0
+      glLightfv(GL_LIGHT0,GL_AMBIENT ,Ambient);
+      glLightfv(GL_LIGHT0,GL_DIFFUSE ,Diffuse);
+      glLightfv(GL_LIGHT0,GL_SPECULAR,Specular);
+      glLightfv(GL_LIGHT0,GL_POSITION,Position);
+   }
+   else
+     glDisable(GL_LIGHTING);
+
+   // double ferris1x = 0;
    double ferris2x = 0;
    if (earthquake)
    {
-      ferris1x = sin(500*rotation);
+      // ferris1x = sin(500*rotation);
       ferris2x = cos(630*rotation);
    }
 
-   ferris_wheel(ferris1x/10, 0, -5, 1);
+   // ferris_wheel(ferris1x/10, 0, -5, 1);
    ferris_wheel(ferris2x/10, 0, 0, 1);
 
    //  Draw axes
@@ -362,6 +484,15 @@ void display()
    //  Display parameters
    glWindowPos2i(5,5);
    Print("Angle=%d,%d  Dim=%.1f FOV=%d vel=%.5f Projection=%s",th,ph,dim,fov,10000000/vel_division, mode?"Perpective":"Orthogonal");
+   
+   if (lamp)
+   {
+      glWindowPos2i(5,45);
+      Print("Model=%s LocalViewer=%s Distance=%d Elevation=%.1f",smooth?"Smooth":"Flat",local?"On":"Off",distance,ylight);
+      glWindowPos2i(5,25);
+      Print("Ambient=%d  Diffuse=%d Specular=%d Emission=%d Shininess=%.0f",ambient,diffuse,specular,emission,shinyvec[0]);
+   }   
+
    //  Render the scene and make it visible
    glFlush();
    glutSwapBuffers();
@@ -408,7 +539,7 @@ void key(unsigned char ch,int x,int y)
    if (ch == 27)
       exit(0);
    //  Reset view angle
-   else if (ch == 'd' || ch == 'D')
+   else if (ch == 'r' || ch == 'R')
    {
       th = ph = 0;
       fov=55;
@@ -417,7 +548,7 @@ void key(unsigned char ch,int x,int y)
       dim=5.0;
    }
    //  Toggle axes
-   else if (ch == 'a' || ch == 'A')
+   else if (ch == 'g' || ch == 'G')
       axes = 1-axes;
    //  Change field of view angle
    else if (ch == '-' && ch>1)
@@ -461,10 +592,39 @@ void key(unsigned char ch,int x,int y)
       }
    else if (ch == 'v')
       vel_division += 50000.0;
-   else if (ch == 'e' || ch == 'E')
+   else if (ch == 't' || ch == 'T')
       earthquake = 1 - earthquake;
    else if (ch == 'm' || ch == 'M')
       mode = 1-mode;
+   else if (ch == 'B' || ch == 'b')
+      lamp = 1 - lamp;
+      else if (ch=='a' && ambient>0)
+      ambient -= 5;
+   else if (ch=='A' && ambient<100)
+      ambient += 5;
+   //  Diffuse level
+   else if (ch=='d' && diffuse>0)
+      diffuse -= 5;
+   else if (ch=='D' && diffuse<100)
+      diffuse += 5;
+   //  Specular level
+   else if (ch=='c' && specular>0)
+      specular -= 5;
+   else if (ch=='C' && specular<100)
+      specular += 5;
+   //  Emission level
+   else if (ch=='e' && emission>0)
+      emission -= 5;
+   else if (ch=='E' && emission<100)
+      emission += 5;
+   //  Shininess level
+   else if (ch=='n' && shininess>-1)
+      shininess -= 1;
+   else if (ch=='N' && shininess<7)
+      shininess += 1;
+   //  Translate shininess power to value (-1 => 0)
+   shinyvec[0] = shininess<0 ? 0 : pow(2.0,shininess);
+
    //  Reproject
    Project();
    //  Tell GLUT it is necessary to redisplay the scene
@@ -481,15 +641,17 @@ void reshape(int width,int height)
    //  Set the viewport to the entire window
    glViewport(0,0, width,height);
    //  Set projection
-   Project();
+   Project(mode?fov:0,asp,dim);
 }
 
 void idle()
 {
    //  Get elapsed (wall) time in seconds
    double t = glutGet(GLUT_ELAPSED_TIME)/vel_division;
+   double t2 = glutGet(GLUT_ELAPSED_TIME)/1000.0;
    //  Calculate spin angle 90 degrees/second
    rotation = fmod(90*t,360);
+   zh = fmod(90*t2,360.0);
    //  Request display update
    glutPostRedisplay();
 }
@@ -509,9 +671,9 @@ int main(int argc,char* argv[])
    //  Set callbacks
    glutDisplayFunc(display);
    glutReshapeFunc(reshape);
-   glutIdleFunc(idle);
    glutSpecialFunc(special);
    glutKeyboardFunc(key);
+   glutIdleFunc(idle);
    //  Pass control to GLUT so it can interact with the user
    glutMainLoop();
    return 0;
