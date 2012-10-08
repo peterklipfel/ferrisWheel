@@ -12,6 +12,7 @@ page down	 - decrease the view size (zoom in)
 a(or A)    - toggle axes
 d(or D)		 - reset display 
 e(or E) 	 - toggle earthquake mode
+m(or M)		 - toggle orthogonal or projection mode
 +/-				 - increase/decrease field of view
 l 				 - decrease the number of lights
 L 				 - increase number of lights
@@ -22,4 +23,4 @@ V 				 - speed up ferris wheel
 
 
 
-This assignment took me around 10 hours
+This assignment took me around 1 hour as I had most of it in place from last week's assignment

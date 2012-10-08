@@ -21,6 +21,7 @@ int ph=0;         //  Elevation of view angle
 int fov=55;       //  Field of view (for perspective)
 int num_lights=1;
 int spokes = 6;
+int mode=0;       //  Depth mode
 double asp=1;     //  Aspect ratio
 double dim=7.0;   //  Size of world
 double rotation = 0;
@@ -61,8 +62,11 @@ static void Project()
    //  Undo previous transformations
    glLoadIdentity();
    //  Perspective transformation
-   gluPerspective(fov,asp,dim/4,4*dim);
-  
+   if (mode)
+      gluPerspective(fov,asp,dim/4,4*dim);
+   //  Orthogonal projection
+   else
+      glOrtho(-asp*dim,+asp*dim, -dim,+dim, -dim,+dim);
    //  Switch to manipulating the model matrix
    glMatrixMode(GL_MODELVIEW);
    //  Undo previous transformations
@@ -310,10 +314,19 @@ void display()
    glLoadIdentity();
    //  Perspective - set eye position
 
-   double Ex = -2*dim*Sin(th)*Cos(ph);
-   double Ey = +2*dim        *Sin(ph);
-   double Ez = +2*dim*Cos(th)*Cos(ph);
-   gluLookAt(Ex,Ey,Ez , 0,0,0 , 0,Cos(ph),0);
+   if (mode)
+   {
+      double Ex = -2*dim*Sin(th)*Cos(ph);
+      double Ey = +2*dim        *Sin(ph);
+      double Ez = +2*dim*Cos(th)*Cos(ph);
+      gluLookAt(Ex,Ey,Ez , 0,0,0 , 0,Cos(ph),0);
+   }
+   //  Orthogonal - set world orientation
+   else
+   {
+      glRotatef(ph,1,0,0);
+      glRotatef(th,0,1,0);
+   }
 
    double ferris1x = 0;
    double ferris2x = 0;
@@ -348,7 +361,7 @@ void display()
    }
    //  Display parameters
    glWindowPos2i(5,5);
-   Print("Angle=%d,%d  Dim=%.1f FOV=%d vel=%.5f, lights per spoke=%f",th,ph,dim,fov,10000000/vel_division), num_lights;
+   Print("Angle=%d,%d  Dim=%.1f FOV=%d vel=%.5f Projection=%s",th,ph,dim,fov,10000000/vel_division, mode?"Perpective":"Orthogonal");
    //  Render the scene and make it visible
    glFlush();
    glutSwapBuffers();
@@ -450,6 +463,8 @@ void key(unsigned char ch,int x,int y)
       vel_division += 50000.0;
    else if (ch == 'e' || ch == 'E')
       earthquake = 1 - earthquake;
+   else if (ch == 'm' || ch == 'M')
+      mode = 1-mode;
    //  Reproject
    Project();
    //  Tell GLUT it is necessary to redisplay the scene
