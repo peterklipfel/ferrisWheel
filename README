@@ -9,10 +9,19 @@ esc        - exit
 Arrow Keys - Move around space
 page up		 - increase the view size (zoom out)
 page down	 - decrease the view size (zoom in)
-a(or A)    - toggle axes
-d(or D)		 - reset display 
-e(or E) 	 - toggle earthquake mode
+g(or G)    - toggle axes
+r(or R)		 - reset display 
+t(or T) 	 - toggle earthquake mode
 m(or M)		 - toggle orthogonal or projection mode
+b(or B)		 - toggle lighting effects
+d 	 			 - decrase diffusion
+D 				 - increase diffusion
+c 				 - decrease specularity
+C 				 - increase specularity
+e 			 	 - decrease emission
+E 				 - increase emission
+n 	  	 	 - decrease shinyness
+N 				 - increase shinyness
 +/-				 - increase/decrease field of view
 l 				 - decrease the number of lights
 L 				 - increase number of lights
@@ -23,4 +32,4 @@ V 				 - speed up ferris wheel
 
 
 
-This assignment took me around 1 hour as I had most of it in place from last week's assignment
+This assignment took me around 4 hours as I had most of it in place from last week's assignment
