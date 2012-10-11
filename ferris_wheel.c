@@ -209,6 +209,42 @@ static void ball(double x,double y,double z,double r)
    glPopMatrix();
 }
 
+static void person(double x, double y , double z, double r, double height)
+{
+   ball(z, y, z, r);
+   height += 1; // no unused variable warning
+   // int h,ph;
+   // float yellow[] = {1.0,1.0,0.0,1.0};
+   // float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+   // //  Save transformation
+   // glPushMatrix();
+   // //  Offset, scale and rotate
+   // glTranslated(x,y,z);
+   // glScaled(r,r,r);
+   // //  White ball
+   // glMaterialfv(GL_FRONT,GL_SHININESS,shinyvec);
+   // glMaterialfv(GL_FRONT,GL_SPECULAR,yellow);
+   // glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
+   // //  Bands of latitude
+   // for (ph=-90;ph<90;ph+=inc)
+   // {
+   //    glBegin(GL_QUAD_STRIP);
+   //    for (h = -height/2; h < height/2; h+=inc)
+   //    {
+   //       glNormal3d(Cos(ph),Sin(ph),h);
+   //       glVertex3d(Cos(ph),Sin(ph),h);
+   //       glNormal3d(Cos(ph+inc),Sin(ph+inc),h+inc);
+   //       glVertex3d(Cos(ph+inc),Sin(ph+inc),h+inc);
+   //       // Vertex(th,ph);
+   //       // Vertex(th,ph+inc);
+   //    }
+   //    glEnd();
+   // }
+   // //  Undo transofrmations
+   // glPopMatrix();
+
+}
+
 static void passenger_box(double x,double y,double z,
                  double dx,double dy,double dz,
                  double th)
@@ -221,7 +257,8 @@ static void passenger_box(double x,double y,double z,
    glScaled(dx,dy,dz);
    //  passenger_box
    glColor3f(0.8,0.4,0.3);
-   ball(0, +1.5, 0, 0.5);
+   person(0, +1.5, 0, 0.5, 0.5);
+   // ball(0, +1.5, 0, 0.5);
    glBegin(GL_QUADS);
    //  Front
    glColor3f(0.6,0.3,0.3);
