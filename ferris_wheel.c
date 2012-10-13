@@ -7,13 +7,14 @@
  *  PgUp/PgDn zooms in/out
  *  +/- changes field of view of rperspective
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <math.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <stdarg.h>
+// #include <math.h>
+#include "CSCIx229.h"
 //  OpenGL with prototypes for glext
 #define GL_GLEXT_PROTOTYPES
-#include <GL/glut.h>
+// #include <GL/glut.h>
 
 int axes=0;       //  Display axes
 int th=0;         //  Azimuth of view angle
@@ -21,7 +22,6 @@ int ph=0;         //  Elevation of view angle
 int fov=55;       //  Field of view (for perspective)
 int num_lights=1;
 int spokes = 6;
-int mode=1;       //  Depth mode
 double asp=1;     //  Aspect ratio
 double dim=7.0;   //  Size of world
 double rotation = 0;
@@ -43,10 +43,13 @@ float shinyvec[1];    // Shininess (value)
 int zh        =  90;  // Light azimuth
 float ylight  =   0;  // Elevation of light
 
+// Textures
+unsigned int texture[1];
+
 
 //  Macro for sin & cos in degrees
-#define Cos(th) cos(3.1415927/180*(th))
-#define Sin(th) sin(3.1415927/180*(th))
+// #define Cos(th) cos(3.1415927/180*(th))
+// #define Sin(th) sin(3.1415927/180*(th))
 
 /*
  *  Convenience routine to output raster text
@@ -65,27 +68,6 @@ void Print(const char* format , ...)
    //  Display the characters one at a time at the current raster position
    while (*ch)
       glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18,*ch++);
-}
-
-/*
- *  Set projection
- */
-static void Project()
-{
-   //  Tell OpenGL we want to manipulate the projection matrix
-   glMatrixMode(GL_PROJECTION);
-   //  Undo previous transformations
-   glLoadIdentity();
-   //  Perspective transformation
-   if (mode)
-      gluPerspective(fov,asp,dim/4,4*dim);
-   //  Orthogonal projection
-   else
-      glOrtho(-asp*dim,+asp*dim, -dim,+dim, -dim,+dim);
-   //  Switch to manipulating the model matrix
-   glMatrixMode(GL_MODELVIEW);
-   //  Undo previous transformations
-   glLoadIdentity();
 }
 
 /*
@@ -414,20 +396,10 @@ void display()
    //  Undo previous transformations
    glLoadIdentity();
    //  Perspective - set eye position
-
-   if (mode)
-   {
-      double Ex = -2*dim*Sin(th)*Cos(ph);
-      double Ey = +2*dim        *Sin(ph);
-      double Ez = +2*dim*Cos(th)*Cos(ph);
-      gluLookAt(Ex,Ey,Ez , 0,0,0 , 0,Cos(ph),0);
-   }
-   //  Orthogonal - set world orientation
-   else
-   {
-      glRotatef(ph,1,0,0);
-      glRotatef(th,0,1,0);
-   }
+   double Ex = -2*dim*Sin(th)*Cos(ph);
+   double Ey = +2*dim        *Sin(ph);
+   double Ez = +2*dim*Cos(th)*Cos(ph);
+   gluLookAt(Ex,Ey,Ez , 0,0,0 , 0,Cos(ph),0);
 
    //  Flat or smooth shading
    glShadeModel(smooth ? GL_SMOOTH : GL_FLAT);
@@ -497,7 +469,7 @@ void display()
    }
    //  Display parameters
    glWindowPos2i(5,5);
-   Print("Angle=%d,%d  Dim=%.1f FOV=%d vel=%.5f Projection=%s",th,ph,dim,fov,10000000/vel_division, mode?"Perpective":"Orthogonal");
+   Print("Angle=%d,%d  Dim=%.1f FOV=%d vel=%.5f",th,ph,dim,fov,10000000/vel_division);
    
    if (lamp)
    {
@@ -539,7 +511,7 @@ void special(int key,int x,int y)
    th %= 360;
    ph %= 360;
    //  Update projection
-   Project();
+   Project(45, asp, dim);
    //  Tell GLUT it is necessary to redisplay the scene
    glutPostRedisplay();
 }
@@ -608,8 +580,6 @@ void key(unsigned char ch,int x,int y)
       vel_division += 50000.0;
    else if (ch == 't' || ch == 'T')
       earthquake = 1 - earthquake;
-   else if (ch == 'm' || ch == 'M')
-      mode = 1-mode;
    else if (ch == 'B' || ch == 'b')
       lamp = 1 - lamp;
       else if (ch=='a' && ambient>0)
@@ -640,7 +610,7 @@ void key(unsigned char ch,int x,int y)
    shinyvec[0] = shininess<0 ? 0 : pow(2.0,shininess);
 
    //  Reproject
-   Project();
+   Project(45, asp, dim);
    //  Tell GLUT it is necessary to redisplay the scene
    glutPostRedisplay();
 }
@@ -655,7 +625,7 @@ void reshape(int width,int height)
    //  Set the viewport to the entire window
    glViewport(0,0, width,height);
    //  Set projection
-   Project(mode?fov:0,asp,dim);
+   Project(45,asp,dim);
 }
 
 void idle()
@@ -688,6 +658,7 @@ int main(int argc,char* argv[])
    glutSpecialFunc(special);
    glutKeyboardFunc(key);
    glutIdleFunc(idle);
+   texture[0] = LoadTexBMP("textures/grey.bmp");
    //  Pass control to GLUT so it can interact with the user
    glutMainLoop();
    return 0;
