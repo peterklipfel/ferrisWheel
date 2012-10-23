@@ -100,12 +100,24 @@ static void beam(double x,double y,double z,
                  double dx,double dy,double dz,
                  double th1, double th2, double ph)
 {
+   float white[] = {1,1,1,1};
+   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+   glMaterialfv(GL_FRONT_AND_BACK,GL_SHININESS,shinyvec);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
+
    //  Save transformation
    glPushMatrix();
    //  Offset
    glTranslated(x,y,z);
    glRotated(th1,ph,1,th2);
    glScaled(dx,dy,dz);
+
+   glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+   glColor3f(1,1,1);
+   glBindTexture(GL_TEXTURE_2D,texture[0]);
+
    //  passenger_box
    glBegin(GL_QUADS);
    //  Front
@@ -148,6 +160,7 @@ static void beam(double x,double y,double z,
    glEnd();
    //  Undo transofrmations
    glPopMatrix();
+   glDisable(GL_TEXTURE_2D);
 }
 
 static void Vertex(double th,double ph)
@@ -480,6 +493,7 @@ void display()
    }   
 
    //  Render the scene and make it visible
+   ErrCheck("display");
    glFlush();
    glutSwapBuffers();
 }
@@ -658,8 +672,9 @@ int main(int argc,char* argv[])
    glutSpecialFunc(special);
    glutKeyboardFunc(key);
    glutIdleFunc(idle);
-   texture[0] = LoadTexBMP("textures/grey.bmp");
+   texture[0] = LoadTexBMP("textures/crate.bmp");
    //  Pass control to GLUT so it can interact with the user
+   ErrCheck("init");
    glutMainLoop();
    return 0;
 }
