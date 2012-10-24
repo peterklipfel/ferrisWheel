@@ -44,7 +44,7 @@ int zh        =  90;  // Light azimuth
 float ylight  =   0;  // Elevation of light
 
 // Textures
-unsigned int texture[1];
+unsigned int texture[2];
 
 
 //  Macro for sin & cos in degrees
@@ -83,13 +83,13 @@ static void outer_frame(double center_x, double center_y,
 {
    int i;
    glBegin(GL_LINE_STRIP);
+   glColor3f(1.0, 0.7, 0.5);
       for (i=0;i<segments;i++)
       {
          double x = r * cos(i*step+rotation);
          double y = r * sin(i*step+rotation);
          double x2 = r * cos((i+1)*step+rotation);
          double y2 = r * sin((i+1)*step+rotation);
-         glColor3f(1.0, 1.0, 0.0);
          glVertex3f(x, y, center_z);
          glVertex3f(x2, y2, center_z); //close the circle
       }
@@ -114,48 +114,48 @@ static void beam(double x,double y,double z,
    glScaled(dx,dy,dz);
 
    glEnable(GL_TEXTURE_2D);
-   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
    glColor3f(1,1,1);
-   glBindTexture(GL_TEXTURE_2D,texture[0]);
+   glBindTexture(GL_TEXTURE_2D,texture[1]);
 
    //  passenger_box
    glBegin(GL_QUADS);
    //  Front
    glNormal3f( 0, 0, 1);
-   glVertex3f(-1,-1, 1);
-   glVertex3f(+1,-1, 1);
-   glVertex3f(+1,+1, 1);
-   glVertex3f(-1,+1, 1);
+   glTexCoord2f(0,0); glVertex3f(-1,-1, 1);
+   glTexCoord2f(1,0); glVertex3f(+1,-1, 1);
+   glTexCoord2f(1,1); glVertex3f(+1,+1, 1);
+   glTexCoord2f(0,1); glVertex3f(-1,+1, 1);
    //  Back
    glNormal3f( 0, 0,-1);
-   glVertex3f(+1,-1,-1);
-   glVertex3f(-1,-1,-1);
-   glVertex3f(-1,+1,-1);
-   glVertex3f(+1,+1,-1);
+   glTexCoord2f(0,0); glVertex3f(+1,-1,-1);
+   glTexCoord2f(1,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(1,1); glVertex3f(-1,+1,-1);
+   glTexCoord2f(0,1); glVertex3f(+1,+1,-1);
    //  Right
    glNormal3f(+1, 0, 0);
-   glVertex3f(+1,-1,+1);
-   glVertex3f(+1,-1,-1);
-   glVertex3f(+1,+1,-1);
-   glVertex3f(+1,+1,+1);
+   glTexCoord2f(0,0); glVertex3f(+1,-1,+1);
+   glTexCoord2f(1,0); glVertex3f(+1,-1,-1);
+   glTexCoord2f(1,1); glVertex3f(+1,+1,-1);
+   glTexCoord2f(0,1); glVertex3f(+1,+1,+1);
    //  Left
    glNormal3f(-1, 0, 0);
-   glVertex3f(-1,-1,-1);
-   glVertex3f(-1,-1,+1);
-   glVertex3f(-1,+1,+1);
-   glVertex3f(-1,+1,-1);
+   glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(1,0); glVertex3f(-1,-1,+1);
+   glTexCoord2f(1,1); glVertex3f(-1,+1,+1);
+   glTexCoord2f(0,1); glVertex3f(-1,+1,-1);
    //  Top
    glNormal3f( 0,+1, 0);
-   glVertex3f(-1,+1,+1);
-   glVertex3f(+1,+1,+1);
-   glVertex3f(+1,+1,-1);
-   glVertex3f(-1,+1,-1);
+   glTexCoord2f(0,0); glVertex3f(-1,+1,+1);
+   glTexCoord2f(1,0); glVertex3f(+1,+1,+1);
+   glTexCoord2f(1,1); glVertex3f(+1,+1,-1);
+   glTexCoord2f(0,1); glVertex3f(-1,+1,-1);
    //  Bottom
    glNormal3f( 0,-one, 0);
-   glVertex3f(-1,-1,-1);
-   glVertex3f(+1,-1,-1);
-   glVertex3f(+1,-1,+1);
-   glVertex3f(-1,-1,+1);
+   glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(1,0); glVertex3f(+1,-1,-1);
+   glTexCoord2f(1,1); glVertex3f(+1,-1,+1);
+   glTexCoord2f(0,1); glVertex3f(-1,-1,+1);
    //  End
    glEnd();
    //  Undo transofrmations
@@ -244,56 +244,75 @@ static void passenger_box(double x,double y,double z,
                  double dx,double dy,double dz,
                  double th)
 {
+   //  Set specular color to white
+   float white[] = {1,1,1,1};
+   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+   glMaterialfv(GL_FRONT_AND_BACK,GL_SHININESS,shinyvec);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);  
    //  Save transformation
    glPushMatrix();
    //  Offset
    glTranslated(x,y,z);
    glRotated(th,0,1,0);
    glScaled(dx,dy,dz);
-   //  passenger_box
-   glColor3f(0.8,0.4,0.3);
-   person(0, +1.5, 0, 0.5, 0.5);
-   // ball(0, +1.5, 0, 0.5);
-   glBegin(GL_QUADS);
-   //  Front
-   glColor3f(0.6,0.3,0.3);
-   glNormal3f( 0, 0, 1);
-   glVertex3f(-1,-1, 1);
-   glVertex3f(+1,-1, 1);
-   glVertex3f(+1,+1, 1);
-   glVertex3f(-1,+1, 1);
-   //  Back
-   glColor3f(0.6,0.3,0.3);
-   glNormal3f( 0, 0,-1);
-   glVertex3f(+1,-1,-1);
-   glVertex3f(-1,-1,-1);
-   glVertex3f(-1,+1,-1);
-   glVertex3f(+1,+1,-1);
-   //  Right
-   glColor3f(0.6,0.3,0.3);
-   glNormal3f(+1, 0, 0);
-   glVertex3f(+1,-1,+1);
-   glVertex3f(+1,-1,-1);
-   glVertex3f(+1,+1,-1);
-   glVertex3f(+1,+1,+1);
-   //  Left
-   glColor3f(0.6,0.3,0.3);
-   glNormal3f(-1, 0, 0);
-   glVertex3f(-1,-1,-1);
-   glVertex3f(-1,-1,+1);
-   glVertex3f(-1,+1,+1);
-   glVertex3f(-1,+1,-1);
-   //  Bottom
+   // Textures
+   glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
    glColor3f(1,1,1);
-   glNormal3f( 0,-one, 0);
-   glVertex3f(-1,-1,-1);
-   glVertex3f(+1,-1,-1);
-   glVertex3f(+1,-1,+1);
-   glVertex3f(-1,-1,+1);
-   //  End
+   glBindTexture(GL_TEXTURE_2D,texture[0]);
+   //  passenger_box
+   // person(0, +1.5, 0, 0.5, 0.5);
+   // ball(0, +1.5, 0, 0.5);
+   //  Front
+   // glBindTexture(GL_TEXTURE_2D,texture[0]);
+   glBegin(GL_QUADS);
+   glNormal3f( 0, 0, 1);
+   glTexCoord2f(0,0); glVertex3f(-1,-1, 1);
+   glTexCoord2f(1,0); glVertex3f(+1,-1, 1);
+   glTexCoord2f(1,1); glVertex3f(+1,+1, 1);
+   glTexCoord2f(0,1); glVertex3f(-1,+1, 1);
    glEnd();
+   //  Back
+   // glBindTexture(GL_TEXTURE_2D,texture[0]);
+   glBegin(GL_QUADS);
+   glNormal3f( 0, 0,-1);
+   glTexCoord2f(0,0); glVertex3f(+1,-1,-1);
+   glTexCoord2f(1,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(1,1); glVertex3f(-1,+1,-1);
+   glTexCoord2f(0,1); glVertex3f(+1,+1,-1);
+   glEnd();
+   //  Right
+   // glBindTexture(GL_TEXTURE_2D,texture[0]);
+   glBegin(GL_QUADS);
+   glNormal3f(+1, 0, 0);
+   glTexCoord2f(0,0); glVertex3f(+1,-1,+1);
+   glTexCoord2f(1,0); glVertex3f(+1,-1,-1);
+   glTexCoord2f(1,1); glVertex3f(+1,+1,-1);
+   glTexCoord2f(0,1); glVertex3f(+1,+1,+1);
+   glEnd();
+   //  Left
+   // glBindTexture(GL_TEXTURE_2D,texture[0]);
+   glBegin(GL_QUADS);
+   glNormal3f(-1, 0, 0);
+   glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(1,0); glVertex3f(-1,-1,+1);
+   glTexCoord2f(1,1); glVertex3f(-1,+1,+1);
+   glTexCoord2f(0,1); glVertex3f(-1,+1,-1);
+   glEnd();
+   //  Bottom
+   // glBindTexture(GL_TEXTURE_2D,texture[0]);
+   glBegin(GL_QUADS);
+   glNormal3f( 0,-one, 0);
+   glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(1,0); glVertex3f(+1,-1,-1);
+   glTexCoord2f(1,1); glVertex3f(+1,-1,+1);
+   glTexCoord2f(0,1); glVertex3f(-1,-1,+1);
+   glEnd();
+   //  End
    //  Undo transofrmations
    glPopMatrix();
+   glDisable(GL_TEXTURE_2D);
 }
 
 
@@ -673,6 +692,7 @@ int main(int argc,char* argv[])
    glutKeyboardFunc(key);
    glutIdleFunc(idle);
    texture[0] = LoadTexBMP("textures/crate.bmp");
+   texture[1] = LoadTexBMP("textures/metal1.bmp");
    //  Pass control to GLUT so it can interact with the user
    ErrCheck("init");
    glutMainLoop();
