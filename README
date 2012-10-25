@@ -11,20 +11,20 @@ page up		 - increase the view size (zoom out)
 page down	 - decrease the view size (zoom in)
 g(or G)    - toggle axes
 r(or R)		 - reset display 
-t(or T) 	 - toggle earthquake mode
-m(or M)		 - toggle orthogonal or projection mode
+t(or T) 	 - toggle earthquake (tremble) mode
 b(or B)		 - toggle lighting effects
-d 	 			 - decrase diffusion
-D 				 - increase diffusion
+a 				 - decrease amient light
+A 				 - increase ambient light
 c 				 - decrease specularity
 C 				 - increase specularity
+d 	 			 - decrase diffusion
+D 				 - increase diffusion
 e 			 	 - decrease emission
 E 				 - increase emission
-n 	  	 	 - decrease shinyness
-N 				 - increase shinyness
-+/-				 - increase/decrease field of view
 l 				 - decrease the number of lights
 L 				 - increase number of lights
+n 	  	 	 - decrease shinyness
+N 				 - increase shinyness
 s 				 - decrease the number of spokes
 S 				 - increase the number of spokes
 v 				 - slow down ferris wheel
@@ -32,4 +32,4 @@ V 				 - speed up ferris wheel
 
 
 
-This assignment took me around 4 hours as I had most of it in place from last week's assignment
+This assignment took me around 6 hours.  I spent way too much time searching for textures, and forgeting that I needed to use glTexCoord2f
