@@ -44,7 +44,7 @@ int zh        =  90;  // Light azimuth
 float ylight  =   0;  // Elevation of light
 
 // Textures
-unsigned int texture[2];
+unsigned int texture[3];
 
 
 //  Macro for sin & cos in degrees
@@ -172,6 +172,7 @@ static void Vertex(double th,double ph)
    //  For a sphere at the origin, the position
    //  and normal vectors are the same
    glNormal3d(x,y,z);
+   glTexCoord2d((90-th)/360.0+90,ph/360.0+0.5+rotation);
    glVertex3d(x,y,z);
 }
 
@@ -189,6 +190,9 @@ static void ball(double x,double y,double z,double r)
    glMaterialfv(GL_FRONT,GL_SHININESS,shinyvec);
    glMaterialfv(GL_FRONT,GL_SPECULAR,yellow);
    glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
+
+   glEnable(GL_TEXTURE_2D);
+   glBindTexture(GL_TEXTURE_2D, texture[2]);
    //  Bands of latitude
    for (ph=-90;ph<90;ph+=inc)
    {
@@ -201,6 +205,7 @@ static void ball(double x,double y,double z,double r)
       glEnd();
    }
    //  Undo transofrmations
+   glDisable(GL_TEXTURE_2D);
    glPopMatrix();
 }
 
@@ -256,13 +261,13 @@ static void passenger_box(double x,double y,double z,
    glTranslated(x,y,z);
    glRotated(th,0,1,0);
    glScaled(dx,dy,dz);
+   person(0, +1.5, 0, 0.5, 0.5);
    // Textures
    glEnable(GL_TEXTURE_2D);
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
    glColor3f(1,1,1);
    glBindTexture(GL_TEXTURE_2D,texture[0]);
    //  passenger_box
-   // person(0, +1.5, 0, 0.5, 0.5);
    // ball(0, +1.5, 0, 0.5);
    //  Front
    // glBindTexture(GL_TEXTURE_2D,texture[0]);
@@ -693,6 +698,7 @@ int main(int argc,char* argv[])
    glutIdleFunc(idle);
    texture[0] = LoadTexBMP("textures/crate.bmp");
    texture[1] = LoadTexBMP("textures/metal1.bmp");
+   texture[2] = LoadTexBMP("textures/face.bmp");
    //  Pass control to GLUT so it can interact with the user
    ErrCheck("init");
    glutMainLoop();
